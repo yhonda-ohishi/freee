@@ -1,0 +1,19 @@
+# freee cache
+freee-cache/
+
+# Logs (daily operation logs are local)
+logs/
+
+# Environment variables
+.env
+
+# Claude Code local state
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__freee-mcp__freee_api_*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python c:/freee/scripts/log_freee_op.py"
+          }
+        ]
+      }
+    ]
+  }
+}
