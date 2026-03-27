@@ -14,6 +14,9 @@ logs/
 __pycache__/
 *.pyc
 
+# Documents (個人書類・届出書類)
+docs/
+
 # OS
 Thumbs.db
 Desktop.ini
