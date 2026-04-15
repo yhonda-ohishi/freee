@@ -22,6 +22,10 @@ PYTHONIOENCODING=utf-8 python "c:/freee/.claude/skills/freee-account-search/scri
 
 勘定科目検索スキル (`freee-account-search`) も利用可。
 
+### 銀行同期済み明細の仕訳登録
+
+freee APIには銀行同期で取り込まれた明細と取引を紐づける消込機能がない（deals作成時のpaymentsは別の明細を生成し、既存明細と重複する）。銀行同期済みの口座で仕訳を登録する場合は、APIで取引を作らず**freee Web画面の「自動で経理」から登録**するようユーザーに案内する。
+
 ### 環境変数
 
 `.env` に機密情報を格納（gitignore済み）:
