@@ -8,7 +8,21 @@ freee会計のMCPサーバー連携プロジェクト。法人設立後の会計
 
 ## freee MCP操作
 
-freee APIはすべてMCPツール経由で呼び出す（`mcp__freee-mcp__freee_api_*`）。
+freee APIはすべてMCPツール経由で呼び出す（`mcp__*__freee_api_*`）。
+
+### ツール名 prefix について
+
+freee MCP の tool prefix は **起動環境によって異なる**:
+
+- **local (Claude Code CLI / Desktop)**: `mcp__freee-mcp__freee_api_*`
+  - `~/.claude.json` 等で stdio 起動した `freee-mcp` server name がそのまま prefix
+- **CCoW (Claude Code on the Web)**: `mcp__<connector-uuid>__freee_api_*`
+  - claude.ai の custom connector 経由で `mcp.freee.co.jp/mcp` に接続するため、connector UUID（例: `ac8e39b2-6f6c-4ef8-9878-294530f4bb34`）が prefix になる
+  - UUID はワークスペース/コネクタごとに異なる
+
+本ドキュメントでは UUID 部をワイルドカードで `mcp__*__freee_api_*` と表記する。実呼び出し時は Claude が自動でツール名解決するため、両環境で同じ意図のコードが動く。
+
+CCoW での疎通確認は `mcp__*__freee_auth_status` / `mcp__*__freee_server_info` で行える（参考: yhonda-ohishi/freee#1）。
 
 ### 勘定科目検索
 
