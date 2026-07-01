@@ -40,6 +40,7 @@ skill 群) で構成される。freee API は全て MCP tool (`mcp__*__freee_api
 | `freee-account-search` | 勘定科目 (account_items) 検索。198 件で 156K 文字 → token 超過するため専用 python script + cache 経由 |
 | `freee-unmatched-check` | 銀行/CC/現金口座の未仕訳 (消込待ち) 明細の一括確認 |
 | `freee-invoice-check` | 発行請求書 (売上請求書) のステータス一括チェック。送付漏れ・入金期限超過/間近・仕訳未登録を `service: "invoice"` API で検出 (会計API旧 `/api/1/invoices` とは別物) |
+| `freee-invoice-review` | 請求書1件ごとの事前確認（画像レビュー＋重複懸念チェック）＋送信後の反映確認（2フェーズ、読み取り専用）。`freee-invoice-check` の一括監査とは異なり、今まさに送ろうとしている1件のピンポイント確認用 |
 
 ## entrypoint / 起動フロー
 
