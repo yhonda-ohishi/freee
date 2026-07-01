@@ -40,6 +40,19 @@ PYTHONIOENCODING=utf-8 python "c:/freee/.claude/skills/freee-account-search/scri
 
 freee APIには銀行同期で取り込まれた明細と取引を紐づける消込機能がない（deals作成時のpaymentsは別の明細を生成し、既存明細と重複する）。銀行同期済みの口座で仕訳を登録する場合は、APIで取引を作らず**freee Web画面の「自動で経理」から登録**するようユーザーに案内する。
 
+### 発行請求書のステータスチェック
+
+freee請求書API (`service: "invoice"`、会計APIの旧 `/api/1/invoices` とは別物) で、送付漏れ・
+入金期限超過・入金期限間近・仕訳未登録の請求書を一括検出できる。詳細は
+`freee-invoice-check` スキル (`.claude/skills/freee-invoice-check/SKILL.md`) を参照。
+
+### 請求書1件ごとの事前確認・事後反映確認
+
+ユーザーが請求書のスクリーンショットを送ってきた時（送信前の内容確認）、および「送信した」
+「登録した」と報告してきた時（送信後の反映確認）は `freee-invoice-review` スキル
+(`.claude/skills/freee-invoice-review/SKILL.md`) を使う。読み取り専用（自動で登録・修正は
+行わない）。
+
 ### 環境変数
 
 `.env` に機密情報を格納（gitignore済み）:
