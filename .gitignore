@@ -20,3 +20,6 @@ docs/
 # OS
 Thumbs.db
 Desktop.ini
+
+# セッション引き継ぎメモ (ローカル専用・実データを含む)
+handoff/

@@ -41,6 +41,7 @@ skill 群) で構成される。freee API は全て MCP tool (`mcp__*__freee_api
 | `freee-unmatched-check` | 銀行/CC/現金口座の未仕訳 (消込待ち) 明細の一括確認 |
 | `freee-invoice-check` | 発行請求書 (売上請求書) のステータス一括チェック。送付漏れ・入金期限超過/間近・仕訳未登録を `service: "invoice"` API で検出 (会計API旧 `/api/1/invoices` とは別物) |
 | `freee-invoice-review` | 請求書1件ごとの事前確認（画像レビュー＋重複懸念チェック）＋送信後の反映確認（2フェーズ、読み取り専用）。`freee-invoice-check` の一括監査とは異なり、今まさに送ろうとしている1件のピンポイント確認用 |
+| `repo-cwd-guard` | 起動ディレクトリの確認。`c:/freee` 以外を cwd にして起動すると `.claude/settings.json` が読まれず hooks が丸ごと黙って無効になる (エラーは出ない)。判断基準と、迂回する場合に手で代行すべき処理を記載 |
 
 ## entrypoint / 起動フロー
 
@@ -57,6 +58,8 @@ skill 群) で構成される。freee API は全て MCP tool (`mcp__*__freee_api
 - 機密は `.env` (`FREEE_COMPANY_ID`、gitignore 済)。MCP では `freee_get_current_company` でも取得可。
 - 書類 `docs/` (social_insurance / tax) は gitignore 済 + rclone で Google Drive backup。
 - Windows 環境: python 出力は `PYTHONIOENCODING=utf-8` を付ける。bash シェル (Unix 構文)。パスは `c:/freee/...` 前提で settings.json に hard-code。
+- **`.claude/settings.json` と `.mcp.json` はセッションの primary working directory からしか読まれない**。`c:/freee` 以外で起動すると hooks (自動ログ・backup) が全て無効になるが**エラーは出ず、動くが記録されないという壊れ方**をする。ユーザーレベルの PreToolUse hook (`~/.claude/hooks/repo-cwd-guard.sh`) が cwd 外からの操作を warn する。詳細は `repo-cwd-guard` skill。
+- 引き継ぎメモは `handoff/YYYY-MM-DD.md` (gitignore 済・実データを含むローカル専用)。セッション開始時に最新を読む。
 
 ## CCoW / CI から見た立ち位置
 
