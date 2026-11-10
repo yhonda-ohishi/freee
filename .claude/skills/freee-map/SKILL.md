@@ -52,7 +52,7 @@ skill 群) で構成される。freee API は全て MCP tool (`mcp__*__freee_api
 
 - **MCP tool prefix は起動環境で変わる**: local (CLI/Desktop) = `mcp__freee-mcp__freee_api_*` / CCoW = `mcp__<connector-uuid>__freee_api_*` (例 `ac8e39b2-...`)。doc では `mcp__*__freee_api_*` とワイルドカード表記。**`.claude/settings.json` の PostToolUse matcher は `mcp__freee-mcp__freee_api_*` 固定なので、CCoW (UUID prefix) では自動ログ hook が match せず発火しない点に注意**。
 - **勘定科目は直接 API を叩かず `freee-account-search` script を使う** (156K 文字で token 超過)。`--broad` でカテゴリ含む広域検索。cache は `~/.claude/projects/c--freee/freee-cache/`。
-- **銀行同期済み明細は API で取引を作らない**: freee API に消込機能が無く、deals 作成時の payments が別明細を生成して重複する。銀行同期口座の仕訳は **freee Web 画面の「自動で経理」から登録**するよう user に案内する。
+- **銀行同期済み明細は `POST /api/1/deals` + payments で処理しない**: payments が別明細を生成して重複する。明細は `/api/1/wallet_txns/{id}/reconcile` (既存取引に消込) / `create_deal` (新規取引) で処理する。詳細は下の「銀行同期済み明細の仕訳登録」。
 - **発行請求書は `service: "invoice"` を使う**: 会計API旧 `/api/1/invoices` (`service: "accounting"`) とは別の独立API (ベースURL `https://api.freee.co.jp/iv`)。`freee-invoice-check` は送付漏れ・入金期限超過/間近・仕訳未登録をサーバー側フィルタ (`sending_status`/`payment_status`/`deal_status`/`cancel_status`) で検出し、全件取得してのクライアント側フィルタは行わない。
 - 機密は `.env` (`FREEE_COMPANY_ID`、gitignore 済)。MCP では `freee_get_current_company` でも取得可。
 - 書類 `docs/` (social_insurance / tax) は gitignore 済 + rclone で Google Drive backup。
@@ -102,7 +102,26 @@ PYTHONIOENCODING=utf-8 python "c:/freee/.claude/skills/freee-account-search/scri
 
 ### 銀行同期済み明細の仕訳登録
 
-freee APIには銀行同期で取り込まれた明細と取引を紐づける消込機能がない（deals作成時のpaymentsは別の明細を生成し、既存明細と重複する）。銀行同期済みの口座で仕訳を登録する場合は、APIで取引を作らず**freee Web画面の「自動で経理」から登録**するようユーザーに案内する。
+2026-11 時点（freee-mcp 0.37.x）で、銀行同期で取り込まれた明細を API で処理できる。`POST /api/1/deals` に payments を付けて作ると別明細が生成され既存明細と重複するため、必ず明細側のエンドポイントを使う:
+
+| 用途 | エンドポイント |
+|---|---|
+| 既存の取引に消込 | `POST /api/1/wallet_txns/{id}/reconcile` |
+| 明細から新規取引を作成 | `POST /api/1/wallet_txns/{id}/create_deal` |
+| プライベート取引 / 口座振替 | `create_private_deal` / `create_transfer` |
+| 無視 / 処理の取り消し | `ignore` / `reset` |
+
+`reconcile` の body（2026-11-10 に実行確認済み）:
+
+```json
+{"company_id": <FREEE_COMPANY_ID>, "deals": [{"deal_id": <取引ID>, "amount": <消込額>}]}
+```
+
+成功すると `{"wallet_txn_id", "deal_ids", "new_deal_id"}` が返り、明細は status=2、取引は settled になる。
+
+- 給与計算の会計連携・freee請求書から作られた既存取引がある明細は、`create_deal` ではなく **`reconcile`**（新規作成すると二重計上）。
+- 請求書から取引を作る API は無い。請求書の入金は、Web 画面で請求書の「取引を登録」をしてもらってから `reconcile` する（明細から `create_deal` すると請求書と紐づかず「未入金」のまま残る）。
+- 書き込みなので、消込先の取引と金額を確認してから実行する。
 
 ### 発行請求書のステータスチェック
 

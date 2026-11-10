@@ -62,5 +62,5 @@ typeは `bank_account`, `credit_card`, `wallet` のいずれか。
 
 ### 注意
 
-- freee APIには明細の消込機能がないため、未仕訳明細の処理はfreee Web画面「自動で経理」で行うようユーザーに案内する
+- 本スキルは確認のみ。処理する場合は、未決済取引（`GET /api/1/deals?status=unsettled`）と金額・日付を突き合わせて消込候補を示し、ユーザーの了承後に `POST /api/1/wallet_txns/{id}/reconcile` で消し込む。手順・注意は freee-map skill「銀行同期済み明細の仕訳登録」を参照
 - 明細が多い場合はlimit=100を指定し、件数だけ先に報告する
